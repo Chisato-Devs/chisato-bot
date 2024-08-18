@@ -1,0 +1,6 @@
+{
+    "pagination.its_not_you": "цей компонент тобі не належить!",
+    "pagination.footer.page": "Сторінка {0} з {1}",
+    "pagination.error.not_found_page": "цієї сторінки не існує!",
+    "pagination.error.index_error": "виникла помилка індексації, будь ласка, повторно використовуйте команду!"
+}

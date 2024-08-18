@@ -1,0 +1,44 @@
+{
+    "1": {
+        "probability": 100,
+        "priority": 10,
+        "rarity": "1",
+        "limited": false
+    },
+    "2": {
+        "probability": 50,
+        "priority": 5,
+        "rarity": "2",
+        "limited": false
+    },
+    "3": {
+        "probability": 15,
+        "priority": 4,
+        "rarity": "3",
+        "limited": false
+    },
+    "4": {
+        "probability": 5,
+        "priority": 3,
+        "rarity": "4",
+        "limited": false
+    },
+    "5": {
+        "probability": 1,
+        "priority": 2,
+        "rarity": "5",
+        "limited": false
+    },
+    "1year": {
+        "probability": 3,
+        "priority": 1,
+        "rarity": "1year",
+        "limited": true
+    },
+    "valentine": {
+        "probability": 3,
+        "priority": 1,
+        "rarity": "valentine",
+        "limited": true
+    }
+}

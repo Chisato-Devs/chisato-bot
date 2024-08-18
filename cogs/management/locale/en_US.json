@@ -1,0 +1,13 @@
+{
+    "global_errs.cooldown": "there is still a cooldown on this command for {0}!",
+    "global_errs.insufficient_permissions": "you do not have sufficient permissions to use this command!",
+    "global_errs.not_in_nsfw": "this command cannot be executed outside an `nsfw` channel!",
+    "global_errs.missed_roles": "you don't have the **special** role ({0})!",
+    "global_errs.timed_out": "interaction is not possible (bot error)!",
+    "guild_control.new_guild.embed.title": "Thank you for adding Chisato!",
+    "guild_control.new_guild.embed.description": "> **Bot Prefix:** `/`\n> **Main Commands:** `/help` | `/settings`",
+    "guild_control.new_guild.component.label": "Support Server",
+    "database.description": "database error! Await news on the support server!",
+    "database.button.label": "Support server",
+    "technical_error": "<:RemoveCircle:1113824544709414984> | **{0}**, a technical error has occurred, the problem has been reported to the developer!\n\n```\n{1}\n```"
+}

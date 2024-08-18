@@ -1,0 +1,13 @@
+{
+    "global_errs.cooldown": "на цю команду є затримка, ще {0}!",
+    "global_errs.insufficient_permissions": "у тебе недостатньо прав на використання цієї команди!",
+    "global_errs.not_in_nsfw": "команда може бути виконана лише в `nsfw` каналі!",
+    "global_errs.missed_roles": "у тебе немає **особливої** ролі ({0})!",
+    "global_errs.timed_out": "взаємодія неможлива (помилка в боті)!",
+    "guild_control.new_guild.embed.title": "Дякуємо за приєднання Чисато!",
+    "guild_control.new_guild.embed.description": "> **Префікс бота:** `/`\n> **Основні команди:** `/help` | `/settings`",
+    "guild_control.new_guild.component.label": "Сервер підтримки",
+    "database.description": "помилка бази даних! Очікуйте новин на сервері підтримки!",
+    "database.button.label": "Сервер підтримки",
+    "technical_error": "<:RemoveCircle:1113824544709414984> | **{0}**, сталася технічна помилка, проблема передана розробникові!\n\n```\n{1}\n```"
+}
