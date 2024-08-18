@@ -19,10 +19,7 @@ class PaginatorView(View):
             timeout: int = None,
             store: ChisatoLocalStore = None
     ) -> None:
-        if interaction:
-            self._loc = interaction.guild_locale
-        else:
-            self._loc = author.guild.preferred_locale
+        self._loc = interaction.guild_locale if interaction else author.guild.preferred_locale
 
         self.embeds = embeds
         self.author = author

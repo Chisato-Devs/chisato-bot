@@ -2,91 +2,98 @@ from typing import Any
 
 from disnake import Role
 from disnake.ext.commands import CheckFailure
+from loguru import logger
 
 
 # noinspection DuplicatedCode
-class NotEnoughMoney(Exception):
+class ChisatoBaseException(Exception):
+    def __init__(self, message: str) -> None:
+        logger.debug(f"{type(self).__name__}: {message}")
+        super().__init__(message)
+
+
+class NotEnoughMoney(ChisatoBaseException):
     pass
 
 
-class AlreadyHavePet(Exception):
+class AlreadyHavePet(ChisatoBaseException):
     pass
 
 
-class DoesntHavePet(Exception):
+class DoesntHavePet(ChisatoBaseException):
     pass
 
 
-class PetMaxLvl(Exception):
+class PetMaxLvl(ChisatoBaseException):
     pass
 
 
-class PetReachedMaxLvl(Exception):
+class PetReachedMaxLvl(ChisatoBaseException):
     pass
 
 
-class PetStatsZero(Exception):
+class PetStatsZero(ChisatoBaseException):
     pass
 
 
-class PetLowStat(Exception):
+class PetLowStat(ChisatoBaseException):
     pass
 
 
-class BankNotEnoughMoney(Exception):
+class BankNotEnoughMoney(ChisatoBaseException):
     pass
 
 
-class BankLessThanZero(Exception):
+class BankLessThanZero(ChisatoBaseException):
     pass
 
 
-class BankBalanceMax(Exception):
+class BankBalanceMax(ChisatoBaseException):
     pass
 
 
 # noinspection DuplicatedCode
-class AlreadyHaveWork(Exception):
+class AlreadyHaveWork(ChisatoBaseException):
     pass
 
 
-class DoesntHaveWork(Exception):
+class DoesntHaveWork(ChisatoBaseException):
     pass
 
 
-class AlreadyMarried(Exception):
+class AlreadyMarried(ChisatoBaseException):
     pass
 
 
-class NotMarried(Exception):
+class NotMarried(ChisatoBaseException):
     pass
 
 
-class MarryNotEnoughMoney(Exception):
+class MarryNotEnoughMoney(ChisatoBaseException):
     pass
 
 
-class AlreadyInShop(Exception):
+class AlreadyInShop(ChisatoBaseException):
     pass
 
 
-class MaxShopItems(Exception):
+class MaxShopItems(ChisatoBaseException):
     pass
 
 
-class NotFoundItem(Exception):
+class NotFoundItem(ChisatoBaseException):
     pass
 
 
-class SubjectEnded(Exception):
+class SubjectEnded(ChisatoBaseException):
     pass
 
 
-class TranslationError(Exception):
+class TranslationError(ChisatoBaseException):
     pass
 
 
-class AlreadyHaveThisSubject(Exception):
+class AlreadyHaveThisSubject(ChisatoBaseException):
     pass
 
 
@@ -96,37 +103,38 @@ class DoesntHaveAgreedRole(CheckFailure):
         super().__init__(message, *args)
 
 
-class MaxPrestige(Exception):
+# noinspection DuplicatedCode
+class MaxPrestige(ChisatoBaseException):
     pass
 
 
-class NotIs100(Exception):
+class NotIs100(ChisatoBaseException):
     pass
 
 
-class DecodeJsonError(Exception):
+class DecodeJsonError(ChisatoBaseException):
     pass
 
 
-class CardNotInTrade(Exception):
+class CardNotInTrade(ChisatoBaseException):
     pass
 
 
-class MaximumPlaylist(Exception):
+class MaximumPlaylist(ChisatoBaseException):
     pass
 
 
-class NotFoundPlaylists(Exception):
+class NotFoundPlaylists(ChisatoBaseException):
     pass
 
 
-class AlreadyCreatedPlaylist(Exception):
+class AlreadyCreatedPlaylist(ChisatoBaseException):
     pass
 
 
-class QueueFull(Exception):
+class QueueFull(ChisatoBaseException):
     pass
 
 
-class PlaylistNotFound(Exception):
+class PlaylistNotFound(ChisatoBaseException):
     pass

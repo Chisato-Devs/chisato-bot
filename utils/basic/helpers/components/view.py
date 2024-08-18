@@ -1,9 +1,24 @@
-from http.client import HTTPException
-
-from disnake import MessageInteraction, Embed, ui, Member, ApplicationCommandInteraction, SelectOption, Guild, \
-    Interaction, ModalInteraction, Forbidden, NotFound, InteractionResponded, Locale
-from disnake.ui import Button, BaseSelect, StringSelect
-from disnake.ui import Item, View
+from disnake import (
+    MessageInteraction,
+    Embed,
+    ui,
+    Member,
+    ApplicationCommandInteraction,
+    SelectOption,
+    Guild,
+    Interaction,
+    ModalInteraction,
+    InteractionResponded,
+    Locale,
+    HTTPException
+)
+from disnake.ui import (
+    Button,
+    BaseSelect,
+    StringSelect,
+    Item,
+    View
+)
 
 from utils.consts import ERROR_EMOJI
 from utils.enviroment import env
@@ -30,28 +45,25 @@ class View(ui.View):
             interaction: MessageInteraction | ApplicationCommandInteraction | ModalInteraction = None,
             exceptions: list[type] = None
     ) -> None:
-        self._exceptions = exceptions if exceptions else []
+        self._exceptions = exceptions or []
         self._store = store
 
-        self.__author = author
-        if not author and interaction:
-            self.__author = interaction.author
+        self.__author = author or (interaction.author if interaction else None)
 
         self.__interaction = interaction
         self.__guild = guild
 
         if interaction:
             self._locale = interaction.guild_locale
-        elif guild:
-            self._locale = guild.preferred_locale
-        elif isinstance(author, Member) and author:
-            self._locale = author.guild.preferred_locale
         else:
-            self._locale = Locale.en_US
+            self._locale = (
+                guild.preferred_locale if guild
+                else (author.guild.preferred_locale if isinstance(author, Member) else Locale.en_US)
+
+            )
 
         self._timeout = timeout
-        self._end = False
-        self.end = False
+        self._end = self.end = False
 
         super().__init__(timeout=timeout)
 
@@ -84,10 +96,6 @@ class View(ui.View):
             try:
                 await self.custom_defer(self.__interaction)
             except HTTPException:
-                pass
-            except Forbidden:
-                pass
-            except NotFound:
                 pass
 
     async def custom_defer(self, interaction: Interaction) -> any:

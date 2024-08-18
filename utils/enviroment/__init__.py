@@ -2,7 +2,7 @@ from os import getenv
 
 from dotenv import load_dotenv
 
-from utils.dataclasses import Environment
+from .enviroment import Environment
 
 __all__ = (
     "env",
