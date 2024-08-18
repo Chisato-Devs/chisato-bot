@@ -1,0 +1,42 @@
+[
+    {
+        "name": "welder",
+        "initial_payment": 100,
+        "final_payment": 500,
+        "initial_premium": 100,
+        "final_premium": 300,
+        "need_works_count": 0
+    },
+    {
+        "name": "lumberjack",
+        "initial_payment": 200,
+        "final_payment": 600,
+        "initial_premium": 200,
+        "final_premium": 400,
+        "need_works_count": 10
+    },
+    {
+        "name": "refueler",
+        "initial_payment": 200,
+        "final_payment": 700,
+        "initial_premium": 200,
+        "final_premium": 500,
+        "need_works_count": 25
+    },
+    {
+        "name": "miner",
+        "initial_payment": 300,
+        "final_payment": 700,
+        "initial_premium": 300,
+        "final_premium": 400,
+        "need_works_count": 40
+    },
+    {
+        "name": "programmer",
+        "initial_payment": 500,
+        "final_payment": 1000,
+        "initial_premium": 400,
+        "final_premium": 500,
+        "need_works_count": 60
+    }
+]

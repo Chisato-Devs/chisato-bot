@@ -1,0 +1,6 @@
+{
+    "pagination.its_not_you": "this component does not belong to you!",
+    "pagination.footer.page": "Page {0} of {1}",
+    "pagination.error.not_found_page": "this page does not exist!",
+    "pagination.error.index_error": "an error occurred in indexing, please reuse the command!"
+}

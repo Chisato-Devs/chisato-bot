@@ -1,0 +1,155 @@
+[
+    {
+        "name": "Dog",
+        "emoji": "🐶",
+        "power": 3,
+        "stamina": 20,
+        "mana": 25,
+        "cost": 400,
+        "link": "https://i.ibb.co/qDw19Yr/dog.png"
+    },
+    {
+        "name": "Cat",
+        "emoji": "🐱",
+        "power": 4,
+        "stamina": 17,
+        "mana": 25,
+        "cost": 350,
+        "link": "https://i.ibb.co/JqQm6Rh/cat.png"
+    },
+    {
+        "name": "Hamster",
+        "emoji": "🐹",
+        "power": 2,
+        "stamina": 30,
+        "mana": 20,
+        "cost": 1100,
+        "link": "https://i.ibb.co/kD8VkBv/hamster.png"
+    },
+    {
+        "name": "Rabbit",
+        "emoji": "🐰",
+        "power": 4,
+        "stamina": 25,
+        "mana": 25,
+        "cost": 1200,
+        "link": "https://i.ibb.co/mh9SN9b/rabbit.png"
+    },
+    {
+        "name": "Fox",
+        "emoji": "🦊",
+        "power": 7,
+        "stamina": 25,
+        "mana": 15,
+        "cost": 1500,
+        "link": "https://i.ibb.co/ZH8q6By/fox.png"
+    },
+    {
+        "name": "Koala",
+        "emoji": "🐨",
+        "power": 5,
+        "stamina": 15,
+        "mana": 40,
+        "cost": 1400,
+        "link": "https://i.ibb.co/BqP6Hkd/koala.png"
+    },
+    {
+        "name": "Pig",
+        "emoji": "🐷",
+        "power": 4,
+        "stamina": 40,
+        "mana": 20,
+        "cost": 1200,
+        "link": "https://i.ibb.co/4T6cL1t/pig.png"
+    },
+    {
+        "name": "Monkey",
+        "emoji": "🐵",
+        "power": 6,
+        "stamina": 35,
+        "mana": 50,
+        "cost": 1700,
+        "link": "https://i.ibb.co/rFKwV7S/monkey.png"
+    },
+    {
+        "name": "Penguin",
+        "emoji": "🐧",
+        "power": 7,
+        "stamina": 25,
+        "mana": 10,
+        "cost": 1800,
+        "link": "https://i.ibb.co/gFcH8DG/penguin.png"
+    },
+    {
+        "name": "Flamingo",
+        "emoji": "🦩",
+        "power": 6,
+        "stamina": 50,
+        "mana": 50,
+        "cost": 1900,
+        "link": "https://i.ibb.co/7Kk4ssm/flamingo.png"
+    },
+    {
+        "name": "Raccoon",
+        "emoji": "🦝",
+        "power": 8,
+        "stamina": 25,
+        "mana": 20,
+        "cost": 2000,
+        "link": "https://i.ibb.co/3B15QZw/racoon.png"
+    },
+    {
+        "name": "Lion",
+        "emoji": "🦁",
+        "power": 8,
+        "stamina": 40,
+        "mana": 50,
+        "cost": 3000,
+        "link": "https://i.ibb.co/fS9pkbF/lion.png"
+    },
+    {
+        "name": "Tiger",
+        "emoji": "🐯",
+        "power": 8,
+        "stamina": 70,
+        "mana": 20,
+        "cost": 3500,
+        "link": "https://i.ibb.co/s6Y4qWh/tiger.png"
+    },
+    {
+        "name": "Wolf",
+        "emoji": "🐺",
+        "power": 7,
+        "stamina": 60,
+        "mana": 50,
+        "cost": 3500,
+        "link": "https://i.ibb.co/6WGjC9Y/wolf.png"
+    },
+    {
+        "name": "Unicorn",
+        "emoji": "🦄",
+        "power": 8,
+        "stamina": 30,
+        "mana": 100,
+        "cost": 4000,
+        "link": "https://i.ibb.co/5Kfny3c/unicorn.png"
+    },
+    {
+        "name": "Dolphin",
+        "emoji": "🐬",
+        "power": 11,
+        "stamina": 15,
+        "mana": 18,
+        "cost": 5555,
+        "link": "https://i.ibb.co/VDg2mNK/dolphin.png"
+    },
+    {
+        "name": "Dragon",
+        "emoji": "🐉",
+        "power": 8,
+        "stamina": 100,
+        "mana": 60,
+        "cost": 7777,
+        "link": "https://i.ibb.co/S5MqnGr/dragon.png"
+    }
+]

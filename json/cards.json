@@ -1,0 +1,296 @@
+{
+    "1": {
+        "name": "cards.chisato.name",
+        "id": 1,
+        "description": "cards.chisato.description",
+        "male": "cards.male.woman"
+    },
+    "2": {
+        "name": "cards.takina.name",
+        "id": 2,
+        "description": "cards.takina.description",
+        "male": "cards.male.woman"
+    },
+    "3": {
+        "name": "cards.shinji.name",
+        "id": 3,
+        "description": "cards.shinji.description",
+        "male": "cards.male.man"
+    },
+    "4": {
+        "name": "cards.majima.name",
+        "id": 4,
+        "description": "cards.majima.description",
+        "male": "cards.male.man"
+    },
+    "5": {
+        "name": "cards.mizuki.name",
+        "id": 5,
+        "description": "cards.mizuki.description",
+        "male": "cards.male.woman"
+    },
+    "6": {
+        "name": "cards.kurumi.name",
+        "id": 6,
+        "description": "cards.kurumi.description",
+        "male": "cards.male.woman"
+    },
+    "7": {
+        "name": "cards.otome.name",
+        "id": 7,
+        "description": "cards.otome.description",
+        "male": "cards.male.woman"
+    },
+    "8": {
+        "name": "cards.harukawa.name",
+        "id": 8,
+        "description": "cards.harukawa.description",
+        "male": "cards.male.woman"
+    },
+    "9": {
+        "name": "cards.kiyotaka.name",
+        "id": 9,
+        "description": "cards.kiyotaka.description",
+        "male": "cards.male.man"
+    },
+    "10": {
+        "name": "cards.suzune.name",
+        "id": 10,
+        "description": "cards.suzune.description",
+        "male": "cards.male.woman"
+    },
+    "11": {
+        "name": "cards.kikyou.name",
+        "id": 11,
+        "description": "cards.kikyou.description",
+        "male": "cards.male.woman"
+    },
+    "12": {
+        "name": "cards.arisu.name",
+        "id": 12,
+        "description": "cards.arisu.description",
+        "male": "cards.male.woman"
+    },
+    "13": {
+        "name": "cards.kei.name",
+        "id": 13,
+        "description": "cards.kei.description",
+        "male": "cards.male.woman"
+    },
+    "14": {
+        "name": "cards.janome.name",
+        "id": 14,
+        "description": "cards.janome.description",
+        "male": "cards.male.woman"
+    },
+    "15": {
+        "name": "cards.kanji.name",
+        "id": 15,
+        "description": "cards.kanji.description",
+        "male": "cards.male.man"
+    },
+    "16": {
+        "name": "cards.manabu.name",
+        "id": 16,
+        "description": "cards.manabu.description",
+        "male": "cards.male.man"
+    },
+    "17": {
+        "name": "cards.rokusuke.name",
+        "id": 17,
+        "description": "cards.rokusuke.description",
+        "male": "cards.male.man"
+    },
+    "18": {
+        "name": "cards.sae.name",
+        "id": 18,
+        "description": "cards.sae.description",
+        "male": "cards.male.woman"
+    },
+    "19": {
+        "name": "cards.masayoshi.name",
+        "id": 19,
+        "description": "cards.masayoshi.description",
+        "male": "cards.male.man"
+    },
+    "20": {
+        "name": "cards.yousuke.name",
+        "id": 20,
+        "description": "cards.yousuke.description",
+        "male": "cards.male.man"
+    },
+    "21": {
+        "name": "cards.midoriya.name",
+        "id": 21,
+        "description": "cards.midoriya.description",
+        "male": "cards.male.man"
+    },
+    "22": {
+        "name": "cards.takemichi.name",
+        "id": 22,
+        "description": "cards.takemichi.description",
+        "male": "cards.male.man"
+    },
+    "23": {
+        "name": "cards.kazutora.name",
+        "id": 23,
+        "description": "cards.kazutora.description",
+        "male": "cards.male.man"
+    },
+    "24": {
+        "name": "cards.kokushibou.name",
+        "id": 24,
+        "description": "cards.kokushibou.description",
+        "male": "cards.male.man"
+    },
+    "25": {
+        "name": "cards.kimi.name",
+        "id": 25,
+        "description": "cards.kimi.description",
+        "male": "cards.male.woman"
+    },
+    "26": {
+        "name": "cards.ken.name",
+        "id": 26,
+        "description": "cards.ken.description",
+        "male": "cards.male.man"
+    },
+    "27": {
+        "name": "cards.alluka.name",
+        "id": 27,
+        "description": "cards.alluka.description",
+        "male": "cards.male.woman"
+    },
+    "28": {
+        "name": "cards.manjirou.name",
+        "id": 28,
+        "description": "cards.manjirou.description",
+        "male": "cards.male.man"
+    },
+    "29": {
+        "name": "cards.tanjirou.name",
+        "id": 29,
+        "description": "cards.tanjirou.description",
+        "male": "cards.male.man"
+    },
+    "30": {
+        "name": "cards.yuji.name",
+        "id": 30,
+        "description": "cards.yuji.description",
+        "male": "cards.male.man"
+    },
+    "31": {
+        "name": "cards.rudeus.name",
+        "id": 31,
+        "description": "cards.rudeus.description",
+        "male": "cards.male.man"
+    },
+    "33": {
+        "name": "cards.sylphiette.name",
+        "id": 33,
+        "description": "cards.sylphiette.description",
+        "male": "cards.male.woman"
+    },
+    "34": {
+        "name": "cards.roxy.name",
+        "id": 34,
+        "description": "cards.roxy.description",
+        "male": "cards.male.woman"
+    },
+    "35": {
+        "name": "cards.eris.name",
+        "id": 35,
+        "description": "cards.eris.description",
+        "male": "cards.male.woman"
+    },
+    "36": {
+        "name": "cards.satoru.name",
+        "id": 36,
+        "description": "cards.satoru.description",
+        "male": "cards.male.man"
+    },
+    "37": {
+        "name": "cards.killua.name",
+        "id": 37,
+        "description": "cards.killua.description",
+        "male": "cards.male.man"
+    },
+    "38": {
+        "name": "cards.muzan.name",
+        "id": 38,
+        "description": "cards.muzan.description",
+        "male": "cards.male.man"
+    },
+    "39": {
+        "name": "cards.shoyo.name",
+        "id": 39,
+        "description": "cards.shoyo.description",
+        "male": "cards.male.man"
+    },
+    "40": {
+        "name": "cards.yumeko.name",
+        "id": 40,
+        "description": "cards.yumeko.description",
+        "male": "cards.male.woman"
+    },
+    "41": {
+        "name": "cards.runa.name",
+        "id": 41,
+        "description": "cards.runa.description",
+        "male": "cards.male.woman"
+    },
+    "42": {
+        "name": "cards.itsuki.name",
+        "id": 42,
+        "description": "cards.itsuki.description",
+        "male": "cards.male.woman"
+    },
+    "43": {
+        "name": "cards.kirari.name",
+        "id": 43,
+        "description": "cards.kirari.description",
+        "male": "cards.male.woman"
+    },
+    "44": {
+        "name": "cards.yuki.name",
+        "id": 44,
+        "description": "cards.yuki.description",
+        "male": "cards.male.woman"
+    },
+    "45": {
+        "name": "cards.yuta.name",
+        "id": 45,
+        "description": "cards.yuta.description",
+        "male": "cards.male.man"
+    },
+    "46": {
+        "name": "cards.megumi.name",
+        "id": 46,
+        "description": "cards.megumi.description",
+        "male": "cards.male.man"
+    },
+    "47": {
+        "name": "cards.tobio.name",
+        "id": 47,
+        "description": "cards.tobio.description",
+        "male": "cards.male.man"
+    },
+    "48": {
+        "name": "cards.hitoka.name",
+        "id": 48,
+        "description": "cards.hitoka.description",
+        "male": "cards.male.woman"
+    },
+    "49": {
+        "name": "cards.kenma.name",
+        "id": 49,
+        "description": "cards.kenma.description",
+        "male": "cards.male.man"
+    },
+    "50": {
+        "name": "cards.kugisaki.name",
+        "id": 50,
+        "description": "cards.kugisaki.description",
+        "male": "cards.male.woman"
+    }
+}

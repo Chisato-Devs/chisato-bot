@@ -1,0 +1,27 @@
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "chisato-discord"
+version = "2.3.2"
+authors = ["Kristaa", "Akulenok"]
+homepage = "https://github.com/Chisato-Devs/chisato"
+description = ""
+package-mode = false
+
+[tool.poetry.dependencies]
+pip = "24.2"
+python = "^3.11"
+aiohttp = "3.9.4"
+disnake = { git = "https://github.com/DisnakeDev/disnake.git" }
+loguru = "^0.7.2"
+aiofiles = "23.2.1"
+asyncpg = "^0.29.0"
+boticordpy = "3.0.4"
+yarl = "^1.9.3"
+typing_extensions = "4.9.0"
+python-dotenv = "1.0.1"
+asyncio = "^3.4.3"
+numpy = "^1.24.2"
+lavamystic = { git = "https://github.com/Krispeckt/LavaMystic.git" }
