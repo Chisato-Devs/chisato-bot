@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from lavamystic import Playable
+from harmonize.objects import Track
 
 
 @dataclass
@@ -9,5 +9,5 @@ class CustomPlaylist:
     id: int
     owner: int
     closed: bool
-    tracks: list[Playable]
+    tracks: list[Track]
     listened: int

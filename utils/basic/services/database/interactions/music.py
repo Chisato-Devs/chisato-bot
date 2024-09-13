@@ -4,7 +4,7 @@ from typing import Optional
 
 from asyncpg import Record
 from disnake import Member
-from lavamystic import Playable
+from harmonize.objects import Track
 
 from utils.basic.services.database import Database, ChisatoPool
 from utils.dataclasses.music import CustomPlaylist
@@ -23,12 +23,12 @@ class MusicDB(Database):
         self.bot = self.this_pool.client
 
     @staticmethod
-    def _serialize_last_track(encoded: str, listened: int) -> tuple[Playable, int]:
+    def _serialize_last_track(encoded: str, listened: int) -> tuple[Track, int]:
         return (
-            Playable.decode(encoded), listened
+            Track.from_encode(encoded), listened
         )
 
-    async def get_last_tracks(self, member: Member) -> list[tuple[Playable, int]]:
+    async def get_last_tracks(self, member: Member) -> list[tuple[Track, int]]:
         return sorted(
             [
                 self._serialize_last_track(i[0], i[1]) for i in
@@ -42,7 +42,7 @@ class MusicDB(Database):
             reverse=True
         )
 
-    async def add_last_track(self, member: Member, track: Playable) -> None:
+    async def add_last_track(self, member: Member, track: Track) -> None:
         await self.execute(
             "INSERT INTO music_last_listened (user_id, encoded, listened) VALUES ($1, $2, $3)",
             member.id, track.encoded, datetime.now().timestamp()
@@ -55,7 +55,7 @@ class MusicDB(Database):
             owner=record[2],
             closed=record[3],
             tracks=[
-                Playable.decode(i)
+                Track.from_encode(i)
                 for i in await self._get_encodes_from_uids(
                     ast.literal_eval(record[4])
                 )
@@ -132,7 +132,7 @@ class MusicDB(Database):
             name: str,
             owner: Member,
             closed: bool = False,
-            tracks: list[Playable] = None
+            tracks: list[Track] = None
     ) -> CustomPlaylist:
         if (await self.fetchval("SELECT COUNT(*) FROM music_playlists WHERE user_id = $1", owner.id)) >= 5:
             raise MaximumPlaylist
@@ -189,7 +189,7 @@ class MusicDB(Database):
             "DELETE FROM music_playlists WHERE uid = $1", uid
         )
 
-    async def add_track_to_playlist(self, uid: int, track: Playable) -> None:
+    async def add_track_to_playlist(self, uid: int, track: Track) -> None:
         tracks: list[int] = ast.literal_eval(
             await self.fetchval(
                 "SELECT tracks FROM music_playlists WHERE uid = $1", uid
@@ -211,7 +211,7 @@ class MusicDB(Database):
             uid
         )
 
-    async def edit_playlist_tracks(self, uid: int, track: Playable, add: bool = False) -> CustomPlaylist:
+    async def edit_playlist_tracks(self, uid: int, track: Track, add: bool = False) -> CustomPlaylist:
         if fetched := await self.fetchval(
                 "SELECT tracks FROM music_playlists WHERE uid = $1", uid
         ):

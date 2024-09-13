@@ -1,7 +1,12 @@
-from lavamystic import Playable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
 
 from utils.handlers.entertainment.music.enums import FromSourceEmoji
 from utils.handlers.entertainment.music.tools import ConvertTime
+
+if TYPE_CHECKING:
+    from harmonize.objects import Track
 
 __all__ = (
     "QueueGenerator",
@@ -19,13 +24,13 @@ class QueueGenerator:
         return f"{hours:02d}:{minutes:02d}:{seconds:02d}"
 
     @classmethod
-    def generate(cls, queue: list[Playable], max_length: int = 80) -> list[str]:
+    def generate(cls, queue: list[Track], max_length: int = 80) -> list[str]:
         return [
             (stroke[:max_length] + "..." + "`")
             if len(
                 stroke := (
-                    f"`{i}) `{getattr(FromSourceEmoji, track.source).value}"
-                    f"` [{ConvertTime.format(track.length)}] {track.title} - {track.author}`"
+                    f"`{i}) `{getattr(FromSourceEmoji, track.source_name).value}"
+                    f"` [{ConvertTime.format(track.duration)}] {track.title} - {track.author}`"
                 )
             ) > max_length
             else stroke
@@ -34,13 +39,13 @@ class QueueGenerator:
         ]
 
     @classmethod
-    def generate_stroke(cls, i: int, *, track: Playable, max_length: int = 80) -> str:
+    def generate_stroke(cls, i: int, *, track: Track, max_length: int = 80) -> str:
         return (
             (stroke[:max_length] + "..." + "`")
             if len(
                 stroke := (
-                    f"`{i}) `{getattr(FromSourceEmoji, track.source).value}"
-                    f"` [{ConvertTime.format(track.length)}] {track.title} - {track.author}`"
+                    f"`{i}) `{getattr(FromSourceEmoji, track.source_name).value}"
+                    f"` [{ConvertTime.format(track.duration)}] {track.title} - {track.author}`"
                 )
             ) > max_length
             else stroke

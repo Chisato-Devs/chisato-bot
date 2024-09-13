@@ -1,7 +1,7 @@
 from typing import Callable, TypeVar
 
 from disnake import ui, TextChannel
-from lavamystic import Pool, InvalidNodeException
+from harmonize.connection import Pool
 
 from utils.basic import EmbedErrorUI
 from utils.enviroment import env
@@ -49,9 +49,7 @@ def has_nodes_button(func: Callable[[T], T]) -> Callable[[T], T]:
         except IndexError:
             interaction = args[1]
 
-        try:
-            Pool.get_node()
-        except InvalidNodeException:
+        if not Pool.get_best_node():
             return await interaction.response.send_message(
                 embed=EmbedErrorUI(
                     description=_t.get(

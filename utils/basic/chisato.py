@@ -50,7 +50,7 @@ class ChisatoBot(AutoShardedBot):
         self.databases: Databases | None = None
         self.webhooks = WebhookSender()
 
-        self._session: ClientSession = ClientSession()
+        self._session: Optional[ClientSession] = None
 
         logger.level("INFO", color="<fg #b6a0ff><bold>")
 
@@ -83,6 +83,8 @@ class ChisatoBot(AutoShardedBot):
 
     @property
     def session(self) -> ClientSession:
+        if not self._session:
+            self._session = ClientSession()
         return self._session
 
     @staticmethod

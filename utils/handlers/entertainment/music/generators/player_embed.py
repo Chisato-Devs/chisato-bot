@@ -1,4 +1,5 @@
-from lavamystic import Player
+from harmonize import Player
+from harmonize.objects import Track
 from loguru import logger
 
 from utils.basic import EmbedUI, ChisatoBot
@@ -20,12 +21,12 @@ class PlayerEmbed:
     async def generate(cls, player: Player) -> list[EmbedUI]:
         embeds = []
         locale = player.guild.preferred_locale
-        current = player.current
+        current: Track = player.queue.current
 
         embed = EmbedUI(
             title=_t.get("music.player.title", locale=locale),
             description=(
-                f"{getattr(FromSourceEmoji, current.source).value} ` [{ConvertTime.format(current.length)}] `"
+                f"{getattr(FromSourceEmoji, current.source_name).value} ` [{ConvertTime.format(current.duration)}] `"
                 f"[`{current.title} - {current.author}`]({current.uri})\n\n"
             ),
         ).set_footer(
@@ -38,11 +39,11 @@ class PlayerEmbed:
                 try:
                     file = await ir.draw_image(
                         "music_card",
-                        musicArtwork=current.artwork or "None",
+                        musicArtwork=current.artwork_url or "None",
                         musicName=current.title,
                         musicArtistName=current.author,
-                        musicSource=current.source.lower(),
-                        musicFilter=FROM_FILTER.get(player.filters, "clear"),
+                        musicSource=current.source_name.lower(),
+                        musicFilter=FROM_FILTER.get(player.filters[0] if player.filters else None, "clear"),
                     )
                     embed.set_image(file=file)
                 except DrawBadRequest as e:
@@ -55,19 +56,15 @@ class PlayerEmbed:
                 ) + volume_warning + "\n"
         )
 
-        if current.playlist:
-            embed.description += _t.get(
-                "music.player.playlist.part", locale=locale,
-                values=(current.playlist.name, current.playlist.url)
-            )
-
-        if current.album and current.album.name:
-            album_name = f" `{current.album.name}`" if current.album.name else ""
-            album_with_url = f" [`{current.album.name}`]({current.album.url})" if current.album.url else album_name
+        if current.plugin_info and (
+                album_name := current.plugin_info.get("albumName", "")
+        ):
+            album_name = f" `{album_name}`" if album_name else ""
+            album_with_url = f" [`{album_name}`]({u})" if (u := current.plugin_info.get("albumUrl")) else album_name
             embed.description += _t.get("music.player.album.part", locale=locale) + album_with_url
 
-        if player.queue:
-            queue = list(player.queue.copy())
+        if player.queue.tracks:
+            queue = list(player.queue.tracks.copy())
 
             embeds.append(EmbedUI(
                 title=_t.get("music.title.next_tracks", locale=locale),
@@ -87,12 +84,13 @@ class PlayerEmbed:
 
         embeds.append(embed)
 
-        if getattr(player.namespace, "karaoke", False):
+        if player.fetch_user_data("karaoke"):
             embeds.append(EmbedUI(
                 title=_t.get("music.karaoke.title", locale=locale),
                 description="\n".join(
                     f"# {line['line']}" if i == 1 else f"**{line['line']}**"
-                    for i, line in enumerate(getattr(player.namespace, 'karaoke_need_lines')) if line.get("line")
+                    for i, line in enumerate(player.fetch_user_data('karaoke_need_lines'))
+                    if line.get("line")
                 )
             ).set_image(
                 SEPARATOR_URI

@@ -652,7 +652,6 @@
     "music.select_track": "**Сначала выбери поисковую систему, а затем и сам трэк!**",
     "music.player.footer": "Музыкальный сервер: {0}",
     "music.player.volume.part": "> <:VolumeUp:1209962888018661456> **Громкость:** `{0}%`",
-    "music.player.playlist.part": "> <:playlist:1209962868930519100> **Плейлист:** [`{0}`]({1})\n",
     "music.player.album.part": "> <:album:1209962971426717716> **Альбом:**",
     "music.title.next_tracks": "<:Arrowright:1114674030331576401> Следущие трэки!",
     "music.thread.name": "Текстовое управление",

@@ -2,14 +2,18 @@ from __future__ import annotations
 
 import secrets
 from http.client import HTTPException
-
-from disnake import Embed, Member, Message, NotFound, MessageInteraction
-from lavamystic import Queue, Playable
+from typing import TYPE_CHECKING
 
 from utils.basic import EmbedUI
 from utils.handlers.entertainment.music.generators.queue import QueueGenerator
 from utils.handlers.pagination import PaginatorView
 from utils.i18n import ChisatoLocalStore
+
+if TYPE_CHECKING:
+    from disnake import Embed, Member, Message, NotFound, MessageInteraction
+
+    from harmonize import Queue
+    from harmonize.objects import Track
 
 __all__ = (
     "QueuePagination",
@@ -49,7 +53,7 @@ class QueuePagination(PaginatorView):
 
     @classmethod
     async def generate(
-            cls, queue: Queue | list[Playable], author: Member, total_time: bool = True
+            cls, queue: Queue | list[Track], author: Member, total_time: bool = True
     ) -> tuple[QueuePagination | None, Embed | None]:
         embeds = []
         strokes = []

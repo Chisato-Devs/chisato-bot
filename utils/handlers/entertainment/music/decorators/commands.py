@@ -1,8 +1,9 @@
-from typing import Callable, TypeVar, cast
+from typing import Callable, TypeVar, cast, Optional
 
 from disnake import ApplicationCommandInteraction, ui, TextChannel
 from disnake.ext.commands import Context, check
-from lavamystic import Pool, InvalidNodeException, Player
+from harmonize import Player
+from harmonize.connection import Pool
 
 from utils.basic import EmbedErrorUI
 from utils.enviroment import env
@@ -41,9 +42,7 @@ def in_voice() -> Callable[[T], T]:
 
 def has_nodes() -> Callable[[T], T]:
     async def wrapper(interaction: ApplicationCommandInteraction | Context) -> bool:
-        try:
-            Pool.get_node()
-        except InvalidNodeException:
+        if not Pool.get_best_node():
             await interaction.response.send_message(
                 embed=EmbedErrorUI(
                     description=_t.get(
@@ -94,18 +93,18 @@ def with_bot() -> Callable[[T], T]:
 
 def in_home() -> Callable[[T], T]:
     async def wrapper(interaction: ApplicationCommandInteraction | Context) -> bool:
+        home: Optional[TextChannel] = None
         if (
-                (vc := cast(Player, interaction.guild.voice_client))
-                and hasattr(vc.namespace, "home")
-                and vc.namespace.home
-                and vc.namespace.home != interaction.channel
+                (player := cast(Player, interaction.guild.voice_client))
+                and (home := player.fetch_user_data("home"))
+                and home != interaction.channel
         ):
             await interaction.response.send_message(
                 embed=EmbedErrorUI(
                     description=_t.get(
                         "music.error.not_in_home",
                         locale=interaction.guild_locale,
-                        values=(vc.namespace.home.mention,)
+                        values=(home.mention,)
                     ),
                     member=interaction.author
                 ),

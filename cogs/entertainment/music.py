@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import asyncio
+from asyncio import CancelledError
 from typing import TYPE_CHECKING, cast, TypeAlias
 
 from disnake import (
@@ -15,16 +16,10 @@ from disnake import (
 )
 from disnake.ext.commands import Param, Context, is_owner
 from disnake.utils import format_dt
-from lavamystic import (
-    Player,
-    Playable,
-    TrackEndEventPayload,
-    PlayerUpdateEventPayload,
-    Pool,
-    Node,
-    WebsocketClosedEventPayload,
-    TrackStuckEventPayload, NodeStatus
-)
+from harmonize import Player
+from harmonize.connection import Pool, Node
+from harmonize.enums import EndReason, NodeStatus
+from harmonize.objects import Track
 from loguru import logger
 
 from utils.basic import CogUI, EmbedUI, EmbedErrorUI, View
@@ -54,22 +49,21 @@ _t = ChisatoLocalStore.load(__file__)
 
 class Music(CogUI):
     def __init__(self, bot: ChisatoBot) -> None:
-        self._empty_voice_task: asyncio.Task | None = None
+        self._lock: asyncio.Lock = asyncio.Lock()
 
         super().__init__(bot)
 
     async def setup_hook(self) -> None:
         try:
-            await Pool.connect(
-                nodes=[
-                    Node(
-                        uri="http://localhost:2333",
-                        password="youshallnotpass",
-                        identifier="Epsilon"
-                    )
-                ],
-                client=self.bot,
-                cache_capacity=1024
+            Pool.load_node(
+                Node(
+                    identifier="Epsilon",
+                    port=2333,
+                    host="localhost",
+                    ssl=False,
+                    password="youshallnotpass",
+                    client=self.bot
+                )
             )
         except Exception as e:
             logger.critical(f"An error was thrown when connecting to the music servers: {e}")
@@ -79,12 +73,13 @@ class Music(CogUI):
         await self.setup_hook()
 
     def cog_unload(self) -> None:
-        asyncio.create_task(Pool.close())
         for player in self.bot.voice_clients:
             player: Player
             if player:
-                asyncio.create_task(self.player_exception(player))
-                asyncio.create_task(player.disconnect())
+                asyncio.gather(
+                    self.player_exception(player),
+                    player.disconnect()
+                )
 
     @CogUI.slash_command(name="music")
     async def __music(self, interaction: ApplicationCommandInteraction) -> ...:
@@ -93,94 +88,129 @@ class Music(CogUI):
     @staticmethod
     async def player_exception(player: Player) -> None:
         try:
-            await player.namespace.message.delete()
+            await player.fetch_user_data("message").delete()
         except (HTTPException, AttributeError):
             pass
 
         try:
-            await player.namespace.thread.delete()
+            await player.fetch_user_data("thread").delete()
         except (HTTPException, AttributeError):
             pass
 
         try:
-            player.namespace.karaoke_task.cancel()
-        except (HTTPException, AttributeError):
+            player.fetch_user_data("karaoke_task").cancel()
+        except (CancelledError, AttributeError):
             pass
         except Exception as e:
             logger.warning(f"{type(e).__name__}: {e}")
 
-    @CogUI.listener("on_mystic_track_end")
-    async def on_mystic_tack_end(self, payload: TrackEndEventPayload) -> None:
-        if payload.player:
-            PlayerButtons.stop_karaoke(payload.player)
-            payload.player.add_to_namespace({
-                "karaoke_data": None,
-            })
+        if guild_tasks := player.fetch_user_data("guild_tasks"):
+            for task in guild_tasks.values():
+                try:
+                    task.cancel()
+                except (CancelledError, AttributeError):
+                    pass
 
-            for member in payload.player.channel.members:
-                if not member.bot:
-                    await self.bot.databases.music.add_last_track(
-                        member=member, track=payload.track
-                    )
+    @CogUI.listener("on_harmonize_track_start")
+    async def track_start_listener(
+            self,
+            player: Player,
+            _track: Track
+    ) -> None:
+        self.remove_task_from_player("queue_empty", player=player)
 
-            if not payload.player.queue and not payload.player.auto_queue and not payload.player.current:
-                await self.player_exception(payload.player)
+    @CogUI.listener("on_harmonize_track_end")
+    async def track_end_listener(
+            self,
+            player: Player,
+            track: Track,
+            _reason: EndReason
+    ) -> None:
+        PlayerButtons.stop_karaoke(player)
+        player.add_user_data(karaoke_data=None)
+        for member in player.channel.members:
+            if not member.bot:
+                await self.bot.databases.music.add_last_track(
+                    member=member, track=track
+                )
 
-    @CogUI.listener("on_mystic_track_stuck")
-    async def on_mystic_track_stuck(self, payload: TrackStuckEventPayload) -> None:
-        await payload.player.skip()
+        if not player.queue.tracks and not player.queue.current:
+            await self.player_exception(player)
 
-    @CogUI.listener("on_mystic_player_destroyed")
-    async def on_mystic_player_destroyed(self, player: Player) -> None:
+    @CogUI.listener("on_harmonize_track_stuck")
+    async def on_harmonize_track_stuck(
+            self,
+            player: Player,
+            _track: Track,
+            _threshold: int
+    ) -> None:
+        await player.skip()
+
+    @CogUI.listener("on_harmonize_player_disconnect")
+    async def player_disconnect_listener(self, player: Player) -> None:
         return await self.player_exception(player)
 
-    @CogUI.listener("on_mystic_connection_lost")
-    async def lava_connection_lost(self, players: list[Player]) -> None:
-        for player in players:
-            if player:
-                await self.player_exception(player)
-                await player.disconnect()
+    @CogUI.listener("on_harmonize_discord_ws_closed")
+    async def ws_close_listener(
+            self,
+            player: Player,
+            code: int,
+            reason: str,
+            by_remote: bool
+    ) -> None:
+        await self.player_exception(player)
+        await player.disconnect()
+
+        logger.warning(f"Player websocket closed with code {code} by {by_remote}. Reason: {reason}")
+
+    @CogUI.listener("on_harmonize_queue_end")
+    async def queue_end_listener(self, player: Player) -> None:
+        message = player.fetch_user_data("message")
+        async with self._lock:
+            await message.delete()
+
+        self.save_task_to_player("queue_empty", player=player)
 
     @classmethod
     async def _task_backend(cls, player: Player) -> None:
         await asyncio.sleep(60)
         await player.disconnect()
 
-    def empty_members_start(self, player: Player) -> None:
-        try:
-            self._empty_voice_task = asyncio.create_task(self._task_backend(player))
-        except (RuntimeError, RuntimeWarning):
-            pass
+    @classmethod
+    def save_task_to_player(cls, name: str, /, *, player: Player) -> None:
+        if not (guild_tasks := player.fetch_user_data("guild_tasks")):
+            player.add_user_data(guild_tasks={})
+            guild_tasks = player.fetch_user_data("guild_tasks")
 
-    def empty_members_cancel(self) -> None:
-        try:
-            self._empty_voice_task.cancel()
-        except AttributeError:
-            pass
+        guild_tasks[name] = asyncio.create_task(cls._task_backend(player))
 
-    @CogUI.listener("on_mystic_player_update")
-    async def on_mystic_player_update(self, payload: PlayerUpdateEventPayload) -> None:
-        if payload.player:
-            if len(payload.player.channel.members) == 1:
-                return self.empty_members_start(payload.player)
+    @classmethod
+    def remove_task_from_player(cls, name: str, /, *, player: Player) -> None:
+        if not (guild_tasks := player.fetch_user_data("guild_tasks")):
+            player.add_user_data(guild_tasks={})
+            guild_tasks = player.fetch_user_data("guild_tasks")
 
-            self.empty_members_cancel()
-
-    @CogUI.listener("on_mystic_websocket_closed")
-    @CogUI.listener("on_mystic_inactive_player")
-    async def on_websocket_close(self, player: WebsocketClosedEventPayload | Player) -> None:
-        if isinstance(player, WebsocketClosedEventPayload):
-            player = player.player
-
-        if not player:
+        if not (task := guild_tasks.get(name)):
             return
 
-        await self.player_exception(player)
-        await player.disconnect()
+        try:
+            task.cancel()
+            del guild_tasks[name]
+        finally:
+            logger.debug(f"Removing player task ({name})...")
+
+    @CogUI.listener("on_harmonize_player_update")
+    async def player_update_listener(self, player: Player) -> None:
+        if player:
+            if len(player.channel.members) == 1:
+                return self.save_task_to_player("empty_members", player=player)
+
+            self.remove_task_from_player("empty_members", player=player)
+            self.bot.dispatch("harmonize_message_update", player)
 
     @staticmethod
-    async def _after_select_track(interaction: MessageInteraction, track: Playable) -> None:
-        player = cast(Player, interaction.guild.voice_client)  # type: ignore
+    async def _after_select_track(interaction: MessageInteraction, track: Track) -> None:
+        player: Player = cast(Player, interaction.guild.voice_client)
 
         if not player:
             player = await Player.connect_to_channel(
@@ -199,8 +229,7 @@ class Music(CogUI):
             )
             return
 
-        await player.queue.put_wait(track)
-
+        player.queue.tracks.append(track)
         await interaction.edit_original_response(
             embed=EmbedUI(
                 title=_t.get("music.title", locale=interaction.guild_locale),
@@ -209,14 +238,14 @@ class Music(CogUI):
                     locale=interaction.guild_locale,
                     values=(track.title, track.author)
                 )
-            ).set_thumbnail(track.artwork),
+            ).set_thumbnail(track.artwork_url),
             view=None
         )
 
-        if not player.playing:
-            await player.play(player.queue.get())
+        if not player.is_playing:
+            await player.play()
         else:
-            player.dispatch_message_update()
+            interaction.bot.dispatch("on_harmonize_message_update", player)
 
     @CogUI.listener("on_message")
     async def on_thread_message(self, message: Message) -> any:
@@ -226,9 +255,8 @@ class Music(CogUI):
         if player := message.guild.voice_client:  # type: ignore
             player: Player
             if (
-                    hasattr(player.namespace, "thread")
-                    and player.namespace.thread
-                    and player.namespace.thread.id == message.channel.id
+                    (thread := player.fetch_user_data("thread"))
+                    and thread.id == message.channel.id
             ):
                 if (
                         not message.author.voice.channel
@@ -243,7 +271,7 @@ class Music(CogUI):
                             and 0 < sort[0] <= 200
                     ):
                         last_volume = player.volume
-                        await player.set_volume(sort[0])
+                        await player.change_volume(sort[0])
                         await message.reply(
                             embed=EmbedUI(
                                 title=_t.get(
@@ -278,9 +306,9 @@ class Music(CogUI):
                                 locale=message.guild.preferred_locale,
                                 values=(
                                     str(message.author),
-                                    player.current.title,
-                                    player.current.author,
-                                    player.current.uri
+                                    player.queue.current.title,
+                                    player.queue.current.author,
+                                    player.queue.current.uri
                                 )
                             )
                         )
@@ -312,23 +340,27 @@ class Music(CogUI):
 
                     view.set_message(new)
 
-    @CogUI.listener("on_mystic_message_update")
-    async def lava_message_update(self, player: Player) -> None:
-        if not player or not player.current:
+    @CogUI.listener("on_harmonize_message_update")
+    async def message_update_listener(self, player: Player) -> None:
+        if not player or not player.queue.current:
             return
 
         embeds = await PlayerEmbed.generate(player)
         try:
-            await player.namespace.message.edit(
-                embeds=embeds,
-                attachments=[],
-                view=PlayerButtons.from_player(player)
-            )
+            async with self._lock:
+                message = player.fetch_user_data("message")
+                return await message.edit(
+                    embeds=embeds,
+                    attachments=[],
+                    view=PlayerButtons.from_player(player)
+                )
         except AttributeError:
-            asyncio.create_task(self._send_message_task(player, embeds))
+            pass
         except HTTPException as e:
             logger.warning(f"{HTTPException.__name__}: {e}")
-            asyncio.create_task(self._send_message_task(player, embeds))
+
+        async with self._lock:
+            await self._send_message_task(player, embeds)
 
     @classmethod
     def _generate_handbook_embed(cls, locale: Locale) -> EmbedUI:
@@ -346,14 +378,18 @@ class Music(CogUI):
 
     @classmethod
     async def _send_message_task(cls, player: Player, embeds: list[EmbedUI]):
-        player.add_to_namespace({
-            "message": (message := await player.namespace.home.send(
-                embeds=embeds, view=PlayerButtons.from_player(player)
+        player.add_user_data(
+            message=(message := await (player.fetch_user_data("home")).send(
+                embeds=embeds,
+                view=PlayerButtons.from_player(player)
             )),
-            "thread": (thread := await message.create_thread(
-                name=_t.get("music.thread.name", locale=player.guild.preferred_locale)
+            thread=(thread := await message.create_thread(
+                name=_t.get(
+                    "music.thread.name",
+                    locale=player.guild.preferred_locale
+                )
             ))
-        })
+        )
 
         await thread.send(
             embed=cls._generate_handbook_embed(
@@ -408,7 +444,7 @@ class Music(CogUI):
             self,
             interaction: ApplicationCommandInteraction
     ) -> None:
-        tracks: list[list[Playable, int]] = await self.bot.databases.music.get_last_tracks(interaction.author)
+        tracks: list[list[Track, int]] = await self.bot.databases.music.get_last_tracks(interaction.author)
         if tracks:
             await interaction.response.send_message(
                 embed=EmbedUI(
@@ -459,9 +495,9 @@ class Music(CogUI):
     async def reload_nodes(
             self, ctx: Context
     ) -> None:
-        for _, node in Pool.nodes.items():
+        for _, node in Pool.get_nodes():
             try:
-                await node.connect(client=self.bot)
+                await node.connect(force=True)
             except Exception as e:
                 logger.warning(f"Lavalink raised {e} ({type(e).__name__})")
 
@@ -472,9 +508,10 @@ class Music(CogUI):
     async def _players(self, ctx: Context) -> None:
         players_total = 0
 
-        for _, node in Pool.nodes.items():
+        for _, node in Pool.get_nodes():
+            node: Node
             if node.status == NodeStatus.CONNECTED:
-                players_total += node.player_count
+                players_total += len(node.players)
 
         await ctx.send(str(players_total))
 

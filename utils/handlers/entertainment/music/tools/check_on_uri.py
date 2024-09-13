@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import cast, TypeAlias, Union
+from typing import cast, TypeAlias, Union, TYPE_CHECKING
 
 import yarl
 from disnake import (
@@ -12,15 +12,14 @@ from disnake import (
     StageChannel,
     Embed, PartialMessageable
 )
-from lavamystic import (
-    Player,
-    Playable,
-    Playlist,
-    LavalinkLoadException
-)
+from harmonize import Player
+from harmonize.connection import Pool
 
 from utils.basic import EmbedUI, EmbedErrorUI
 from utils.i18n import ChisatoLocalStore
+
+if TYPE_CHECKING:
+    from harmonize.objects import LoadResult
 
 Channel: TypeAlias = TextChannel | Thread | VoiceChannel | StageChannel
 _t = ChisatoLocalStore.load("./cogs/entertainment/music.py")
@@ -36,9 +35,9 @@ async def if_uri(
     if yarl.URL(query).host:
         player: Player = cast(Player, guild.voice_client)
 
-        try:
-            tracks = await Playable.search(query)
-        except LavalinkLoadException:
+        node = Pool.get_best_node()
+        result: LoadResult = await node.get_tracks(query)
+        if result.error or not result.tracks:
             return EmbedErrorUI(
                 description=_t.get(
                     "music.error.not_found_tracks",
@@ -47,20 +46,7 @@ async def if_uri(
                 member=author
             )
 
-        if not tracks:
-            return EmbedErrorUI(
-                description=_t.get(
-                    "music.error.not_found_tracks",
-                    locale=guild.preferred_locale
-                ),
-                member=author
-            )
-
-        if (
-                tracks.tracks[0].source == "youtube"
-                if isinstance(tracks, Playlist) else
-                tracks[0].source == "youtube"
-        ):
+        if result.tracks[0].source_name == "youtube":
             return EmbedErrorUI(
                 description=_t.get(
                     "music.error.not_youtube",
@@ -72,22 +58,23 @@ async def if_uri(
         if not player and channel:
             player = await Player.connect_to_channel(channel, home=text_channel, karaoke=False)
 
-        if isinstance(tracks, Playlist):
+        if result.playlist_info.name:
             embed = EmbedUI(
                 title=_t.get("music.title", locale=guild.preferred_locale),
                 description=_t.get(
                     "music.playlist.added",
                     locale=guild.preferred_locale,
                     values=(
-                        tracks.name,
-                        str(tracks.author),
-                        str(len(tracks.tracks[:150 - len(player.queue)]))
+                        result.playlist_info.name,
+                        str(result.plugin_info.get("author", "Unknown")),
+                        str(len(result.tracks[:150 - len(player.queue)]))
                     )
                 )
             )
-            if tracks.artwork:
-                embed.set_thumbnail(tracks.artwork)
-            tracks = tracks.tracks[:150 - len(player.queue)]
+            if artwork := result.plugin_info.get("artworkUrl"):
+                embed.set_thumbnail(artwork)
+
+            tracks = result.tracks[:150 - len(player.queue)]
         else:
             embed = EmbedUI(
                 title=_t.get("music.title", locale=guild.preferred_locale),
@@ -95,19 +82,21 @@ async def if_uri(
                     "music.track.add_to_queue",
                     locale=guild.preferred_locale,
                     values=(
-                        tracks[0].title,
-                        tracks[0].author
+                        result.tracks[0].title,
+                        result.tracks[0].author
                     )
                 )
             )
-            if tracks[0].artwork:
-                embed.set_thumbnail(tracks[0].artwork)
+            if artwork := result.tracks[0].artwork_url:
+                embed.set_thumbnail(artwork)
+
+            tracks = result.tracks
 
         if channel:
-            await player.queue.put_wait(tracks)
-            if not player.playing:
-                await player.play(player.queue.get())
+            player.queue.add(tracks=tracks)
+            if not player.is_playing:
+                await player.play()
             else:
-                player.dispatch_message_update()
+                player.client.dispatch("on_harmonize_message_update", player)
 
         return embed
