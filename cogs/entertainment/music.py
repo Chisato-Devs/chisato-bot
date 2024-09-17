@@ -73,13 +73,14 @@ class Music(CogUI):
         await self.setup_hook()
 
     def cog_unload(self) -> None:
-        for player in self.bot.voice_clients:
-            player: Player
-            if player:
-                asyncio.gather(
-                    self.player_exception(player),
-                    player.disconnect()
-                )
+        for voice_client in self.bot.voice_clients:
+            player: Player = cast(Player, voice_client)
+            asyncio.gather(
+                self.player_exception(player),
+                player.disconnect()
+            )
+
+        Pool.close_all()
 
     @CogUI.slash_command(name="music")
     async def __music(self, interaction: ApplicationCommandInteraction) -> ...:
@@ -118,6 +119,7 @@ class Music(CogUI):
             _track: Track
     ) -> None:
         self.remove_task_from_player("queue_empty", player=player)
+        self.bot.dispatch("harmonize_message_update", player)
 
     @CogUI.listener("on_harmonize_track_end")
     async def track_end_listener(
@@ -127,15 +129,11 @@ class Music(CogUI):
             _reason: EndReason
     ) -> None:
         PlayerButtons.stop_karaoke(player)
-        player.add_user_data(karaoke_data=None)
         for member in player.channel.members:
             if not member.bot:
                 await self.bot.databases.music.add_last_track(
                     member=member, track=track
                 )
-
-        if not player.queue.tracks and not player.queue.current:
-            await self.player_exception(player)
 
     @CogUI.listener("on_harmonize_track_stuck")
     async def on_harmonize_track_stuck(
@@ -161,7 +159,7 @@ class Music(CogUI):
         await self.player_exception(player)
         await player.disconnect()
 
-        logger.warning(f"Player websocket closed with code {code} by {by_remote}. Reason: {reason}")
+        logger.warning(f"Player websocket closed with code {code} by remote {by_remote}. Reason: {reason}")
 
     @CogUI.listener("on_harmonize_queue_end")
     async def queue_end_listener(self, player: Player) -> None:
@@ -175,6 +173,7 @@ class Music(CogUI):
     async def _task_backend(cls, player: Player) -> None:
         await asyncio.sleep(60)
         await player.disconnect()
+        await cls.player_exception(player)
 
     @classmethod
     def save_task_to_player(cls, name: str, /, *, player: Player) -> None:
@@ -201,12 +200,10 @@ class Music(CogUI):
 
     @CogUI.listener("on_harmonize_player_update")
     async def player_update_listener(self, player: Player) -> None:
-        if player:
-            if len(player.channel.members) == 1:
-                return self.save_task_to_player("empty_members", player=player)
+        if len(player.channel.members) == 1:
+            return self.save_task_to_player("empty_members", player=player)
 
-            self.remove_task_from_player("empty_members", player=player)
-            self.bot.dispatch("harmonize_message_update", player)
+        self.remove_task_from_player("empty_members", player=player)
 
     @staticmethod
     async def _after_select_track(interaction: MessageInteraction, track: Track) -> None:
@@ -266,7 +263,7 @@ class Music(CogUI):
 
                 if message.content.startswith(f"volume"):
                     if (
-                            (sort := list(map(int, message.content.split(" ")[1:])))
+                            (sort := list(map(int, message.content.replace(",", ".").split(" ")[1:])))
                             and len(sort) == 1
                             and 0 < sort[0] <= 200
                     ):

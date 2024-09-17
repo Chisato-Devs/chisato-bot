@@ -13,7 +13,7 @@ description = ""
 pip = "^24.2"
 python = "^3.11"
 aiohttp = "^3.9.4"
-harmonize-py = { git = "https://github.com/Krispeckt/Harmonize.git" }
+harmonize-py = { git = "https://github.com/Krispeckt/Harmonize.git", branch = "fixes/events" }
 disnake = { git = "https://github.com/DisnakeDev/disnake.git" }
 loguru = "^0.6.0"
 aiofiles = "23.2.1"

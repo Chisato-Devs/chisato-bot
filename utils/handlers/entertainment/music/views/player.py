@@ -111,6 +111,7 @@ class PlayerButtons(View):
             return
 
         await player.set_filters(filter=self._from_value[select.values[0]])
+        interaction.bot.dispatch("harmonize_message_update", player)
 
     @ui.button(emoji="<:Decreasevolume:1209962872881283092>", custom_id="volume.down", row=1)
     @in_voice_button
@@ -129,6 +130,7 @@ class PlayerButtons(View):
             self.get_item("volume.up").disabled = False
 
         await player.change_volume(volume)
+        interaction.bot.dispatch("harmonize_message_update", player)
 
     @ui.button(emoji="<:VolumeUp:1209962888018661456>", custom_id="volume.up", row=1)
     @in_voice_button
@@ -147,6 +149,7 @@ class PlayerButtons(View):
             self.get_item("volume.down").disabled = False
 
         await player.change_volume(volume)
+        interaction.bot.dispatch("harmonize_message_update", player)
 
     @ui.button(emoji="<:invoice:1114239254407696584>", custom_id="player.queue", row=1)
     @in_voice_button
@@ -161,6 +164,8 @@ class PlayerButtons(View):
         else:
             await interaction.response.defer()
 
+        interaction.bot.dispatch("harmonize_message_update", player)
+
     @ui.button(emoji="<:clear_queue:1228356822918762506>", custom_id="clear_queue", row=1)
     @in_voice_button
     @has_nodes_button
@@ -172,7 +177,7 @@ class PlayerButtons(View):
             return
 
         player.queue.clear()
-        interaction.bot.dispatch("on_harmonize_message_update", player)
+        interaction.bot.dispatch("harmonize_message_update", player)
 
     @ui.button(emoji="<:Shuffle:1209962867042951289>", custom_id="shuffle", row=1)
     @in_voice_button
@@ -184,7 +189,7 @@ class PlayerButtons(View):
         player = cast(Player, interaction.guild.voice_client)  # type: ignore
 
         player.queue.shuffle()
-        interaction.bot.dispatch("on_harmonize_message_update", player)
+        interaction.bot.dispatch("harmonize_message_update", player)
 
     @ui.button(emoji="<:Grid:1209962879797694566>", custom_id="stop", row=2)
     @in_voice_button
@@ -205,8 +210,10 @@ class PlayerButtons(View):
         player = cast(Player, interaction.guild.voice_client)  # type: ignore
 
         if len(player.queue.history) >= 1:
-            player.queue.tracks.insert(0, player.queue.history.pop())
+            player.queue.tracks.insert(0, player.queue.history.pop(0))
             await player.play()
+
+        interaction.bot.dispatch("harmonize_message_update", player)
 
     @ui.button(emoji="<:Pause:1209962863784108063>", custom_id="pause.resume", row=2)
     @in_voice_button
@@ -225,12 +232,12 @@ class PlayerButtons(View):
                 )
 
                 self.get_item("pause.resume").emoji = "<:Pause:1209962863784108063>"
-            else:
-                self.stop_karaoke(player)
-                await player.set_pause(True)
-                self.get_item("pause.resume").emoji = "<:Play:1209962865193127997>"
+        else:
+            self.stop_karaoke(player)
+            await player.set_pause(True)
+            self.get_item("pause.resume").emoji = "<:Play:1209962865193127997>"
 
-                await interaction.response.edit_message(view=self)
+            await interaction.response.edit_message(view=self)
 
     @ui.button(emoji="<:next:1210030059792900146>", custom_id="next", row=2)
     @in_voice_button
@@ -318,16 +325,17 @@ class PlayerButtons(View):
         while player.connected:
             next_lines = list(
                 islice(filter(
-                    lambda x: player.position_timestamp <= x.get("timestamp", 0), lyrics_data
+                    lambda x: player.last_position <= x.get("timestamp", 0), lyrics_data
                 ), 2)
             )
+
             lines = [
                 lyrics_data[lyrics_data.index(next_lines[0]) - 1] if lyrics_data.index(next_lines[0]) != 0 else {},
                 *next_lines
             ]
 
             player.add_user_data(karaoke_need_lines=lines)
-            player.client.dispatch("on_harmonize_message_update", player)
+            player.client.dispatch("harmonize_message_update", player)
 
             await sleep(max(lines[0].get("duration") / 1000, 6))
         else:
@@ -335,8 +343,11 @@ class PlayerButtons(View):
 
     @classmethod
     def stop_karaoke(cls, player: Player) -> None:
-        logger.debug(f"Player {player.channel.id} stopped karaoke mode")
-        player.add_user_data(karaoke=False)
+        player.add_user_data(
+            karaoke=False,
+            karaoke_need_lines=[],
+            karaoke_task=None
+        )
         if _task := player.fetch_user_data("karaoke_task"):
             _task.cancel()
 
@@ -346,7 +357,7 @@ class PlayerButtons(View):
     @with_bot_button
     async def karaoke_mode(self, _: ui.Button, interaction: MessageInteraction) -> None:
         player = cast(Player, interaction.guild.voice_client)  # type: ignore
-        if FROM_FILTER.get(player.filters[0], "") in self.BLACK_LIST_FILTERS:
+        if FROM_FILTER.get(player.filters[0] if player.filters else None, "") in self.BLACK_LIST_FILTERS:
             return await interaction.response.send_message(
                 embed=EmbedErrorUI(
                     description=_t.get(
@@ -361,17 +372,18 @@ class PlayerButtons(View):
         if player.fetch_user_data("karaoke"):
             self.stop_karaoke(player)
 
-            interaction.bot.dispatch("on_harmonize_message_update", player)
+            interaction.bot.dispatch("harmonize_message_update", player)
             return await interaction.response.defer()
 
-        if not (data_json := player.fetch_user_data("karaoke_data")):
+        data_json: dict[str, any] = player.fetch_user_data("karaoke_data")
+        if not data_json:
             data_json: dict[str, any] = await player.node.request(
                 "GET",
                 path=f"sessions/{player.node.session_id}/players/{player.guild.id}/track/lyrics",
                 params={"skipTrackSource": "true"}
             )
 
-        if data_json and data_json.get("lines"):
+        if data_json and isinstance(data_json, dict) and data_json.get("lines"):
             player.add_user_data(
                 karaoke=True,
                 karaoke_data=data_json,

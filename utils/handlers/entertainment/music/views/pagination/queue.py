@@ -76,7 +76,7 @@ class QueuePagination(PaginatorView):
                         "music.playlist.queue_length.footer",
                         locale=author.guild.preferred_locale
                     ) + QueueGenerator.to_normal_time(
-                        sum(map(lambda x: x.length, queue), 0)
+                        sum(map(lambda x: x.duration, queue), 0)
                     )
 
                 strokes.clear()

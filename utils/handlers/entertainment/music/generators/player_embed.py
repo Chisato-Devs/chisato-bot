@@ -60,7 +60,7 @@ class PlayerEmbed:
                 album_name := current.plugin_info.get("albumName", "")
         ):
             album_name = f" `{album_name}`" if album_name else ""
-            album_with_url = f" [`{album_name}`]({u})" if (u := current.plugin_info.get("albumUrl")) else album_name
+            album_with_url = f" [{album_name}]({u})" if (u := current.plugin_info.get("albumUrl")) else album_name
             embed.description += _t.get("music.player.album.part", locale=locale) + album_with_url
 
         if player.queue.tracks:
@@ -78,7 +78,7 @@ class PlayerEmbed:
                 text=_t.get(
                     "music.queue_length.footer", locale=locale
                 ) + QueueGenerator.to_normal_time(
-                    sum(map(lambda x: x.length, player.queue), 0)
+                    sum(map(lambda x: x.duration, player.queue), 0)
                 ),
             ))
 
