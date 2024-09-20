@@ -4,6 +4,8 @@ import secrets
 from http.client import HTTPException
 from typing import TYPE_CHECKING
 
+from harmonize import Queue
+
 from utils.basic import EmbedUI
 from utils.handlers.entertainment.music.generators.queue import QueueGenerator
 from utils.handlers.pagination import PaginatorView
@@ -12,7 +14,6 @@ from utils.i18n import ChisatoLocalStore
 if TYPE_CHECKING:
     from disnake import Embed, Member, Message, NotFound, MessageInteraction
 
-    from harmonize import Queue
     from harmonize.objects import Track
 
 __all__ = (
@@ -55,10 +56,13 @@ class QueuePagination(PaginatorView):
     async def generate(
             cls, queue: Queue | list[Track], author: Member, total_time: bool = True
     ) -> tuple[QueuePagination | None, Embed | None]:
+        if isinstance(queue, Queue):
+            queue = queue.tracks
+
         embeds = []
         strokes = []
         for i, track in enumerate(queue, 1):
-            strokes.append(QueueGenerator.generate_stroke(i, track=track, max_length=80))
+            strokes.append(QueueGenerator.generate_stroke(i, track=track))
 
             if i % 20 == 0 or len(queue) == i:
                 embed = EmbedUI(
@@ -75,9 +79,7 @@ class QueuePagination(PaginatorView):
                     embed.description += "\n# <:HourGlass:1239232681292595220>" + _t.get(
                         "music.playlist.queue_length.footer",
                         locale=author.guild.preferred_locale
-                    ) + QueueGenerator.to_normal_time(
-                        sum(map(lambda x: x.duration, queue), 0)
-                    )
+                    ) + QueueGenerator.get_time_from_queue(queue)
 
                 strokes.clear()
 

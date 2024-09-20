@@ -107,7 +107,8 @@ class ViewPage(View):
         ]
 
         if self.playlist.tracks:
-            strokes: list[str] = QueueGenerator.generate(self._playlist.tracks[:11])
+            _, tracks = QueueGenerator.slice_queue(10, queue=self._playlist.tracks.copy())
+            strokes: list[str] = QueueGenerator.generate(tracks)
             embeds.append(
                 EmbedUI(
                     title=_t.get(
@@ -115,7 +116,9 @@ class ViewPage(View):
                         locale=self._interaction.guild_locale
                     ),
                     description="\n".join(strokes[:10]) + ("\n`. . .`" if len(self._playlist.tracks) > 10 else "")
-                ).set_image(SEPARATOR_URI).set_footer(
+                ).set_image(
+                    SEPARATOR_URI
+                ).set_footer(
                     icon_url="https://i.ibb.co/T8b3f0h/Hour-Glass.png",
                     text=_t.get(
                         "music.playlist.queue_length.footer",

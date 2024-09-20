@@ -210,7 +210,7 @@ class PlayerButtons(View):
         player = cast(Player, interaction.guild.voice_client)  # type: ignore
 
         if len(player.queue.history) >= 1:
-            player.queue.tracks.insert(0, player.queue.history.pop(0))
+            player.queue.items.insert(0, player.queue.history.pop(0))
             await player.play()
 
         interaction.bot.dispatch("harmonize_message_update", player)

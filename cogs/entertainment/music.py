@@ -226,7 +226,7 @@ class Music(CogUI):
             )
             return
 
-        player.queue.tracks.append(track)
+        player.queue.items.append(track)
         await interaction.edit_original_response(
             embed=EmbedUI(
                 title=_t.get("music.title", locale=interaction.guild_locale),

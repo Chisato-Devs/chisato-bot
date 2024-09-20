@@ -63,23 +63,22 @@ class PlayerEmbed:
             album_with_url = f" [{album_name}]({u})" if (u := current.plugin_info.get("albumUrl")) else album_name
             embed.description += _t.get("music.player.album.part", locale=locale) + album_with_url
 
-        if player.queue.tracks:
-            queue = list(player.queue.tracks.copy())
+        if player.queue.items:
+            queue = list(player.queue.items.copy())
 
+            total, tracks = QueueGenerator.slice_queue(10, queue=queue)
             embeds.append(EmbedUI(
                 title=_t.get("music.title.next_tracks", locale=locale),
                 description="\n".join(
-                    QueueGenerator.generate(queue[:10], max_length=80)
-                ) + ("\n`. . .`" if len(queue) > 10 else ""),
+                    QueueGenerator.generate(tracks, max_length=80)
+                ) + ("\n`. . .`" if total > 10 else ""),
             ).set_image(
                 SEPARATOR_URI
             ).set_footer(
                 icon_url=NODE_ICON,
                 text=_t.get(
                     "music.queue_length.footer", locale=locale
-                ) + QueueGenerator.to_normal_time(
-                    sum(map(lambda x: x.duration, player.queue), 0)
-                ),
+                ) + QueueGenerator.get_time_from_queue(player.queue.items),
             ))
 
         embeds.append(embed)

@@ -125,7 +125,7 @@ class TrackEditor(View):
                             label=f"{i}. " + track.title[:32],
                             description=option_description + track.author[:64],
                             value=str(i),
-                            emoji=getattr(FromSourceEmoji, track.source).value
+                            emoji=getattr(FromSourceEmoji, track.source_name).value
                         )
                     )
                     strokes.append(
