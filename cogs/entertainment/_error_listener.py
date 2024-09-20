@@ -3,7 +3,6 @@ from typing import Callable, Optional, TYPE_CHECKING, Union
 
 from disnake import ApplicationCommandInteraction
 from disnake.ext.commands import errors, MemberNotFound
-from lavamystic import InvalidNodeException
 
 from utils import exceptions as custom_errors
 from utils.basic import EmbedErrorUI, CogUI
@@ -21,7 +20,7 @@ class FunErrorsListenerCog(CogUI):
         self.error_handling: dict[Union[errors, custom_errors], Callable] = {
             MemberNotFound: self.member_not_found,
             DecodeJsonError: self.json_error,
-            InvalidNodeException: self.node_exception
+            # InvalidNodeException: self.node_exception
         }
 
         super().__init__(bot)

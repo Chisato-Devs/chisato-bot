@@ -11,11 +11,8 @@ from disnake import (
     Embed,
     ApplicationCommandInteraction
 )
-from lavamystic import (
-    Playable,
-    LavalinkLoadException,
-    Playlist
-)
+from harmonize.connection import Pool
+from harmonize.enums import LoadType
 
 from utils.basic import (
     EmbedUI,
@@ -127,42 +124,17 @@ class Create(View):
         self.end = True
         query = interaction.text_values["playlists.query"]
         if yarl.URL(query).host:
-            try:
-                tracks = await Playable.search(query)
-            except LavalinkLoadException:
+            node = Pool.get_best_node()
+            result = await node.get_tracks(query)
+
+            if not result or not result.tracks or result.error:
                 await interaction.edit_original_response(
                     embed=self.generate_embed(self._container),
                     view=self
                 )
                 return
 
-            if not tracks:
-                await interaction.edit_original_response(
-                    embed=self.generate_embed(self._container),
-                    view=self
-                )
-                return
-
-            if isinstance(tracks, Playlist):
-                if tracks.tracks[0].source == "youtube":
-                    return await interaction.response.send_message(
-                        embed=EmbedErrorUI(
-                            description=_t.get(
-                                "music.playlists.error.not_youtube",
-                                locale=interaction.guild_locale
-                            ),
-                            member=interaction.author
-                        )
-                    )
-
-                self.container.tracks.extend(tracks.tracks[:50 - len(self.container.tracks)])
-                await interaction.edit_original_response(
-                    embed=self.generate_embed(self._container),
-                    view=self
-                )
-                return
-
-            if tracks[0].source == "youtube":
+            if result.tracks[0].source_name == "youtube":
                 return await interaction.response.send_message(
                     embed=EmbedErrorUI(
                         description=_t.get(
@@ -173,7 +145,15 @@ class Create(View):
                     )
                 )
 
-            self.container.tracks = tracks[0]
+            if result.load_type == LoadType.PLAYLIST:
+                self.container.tracks.extend(result.tracks[:50 - len(self.container.tracks)])
+                await interaction.edit_original_response(
+                    embed=self.generate_embed(self._container),
+                    view=self
+                )
+                return
+
+            self.container.tracks = result.tracks[0]
             await interaction.edit_original_response(
                 embed=self.generate_embed(self._container),
                 view=self

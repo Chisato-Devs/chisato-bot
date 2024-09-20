@@ -1,10 +1,15 @@
-from lavamystic import Playable
+from __future__ import annotations
+
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from harmonize.objects import Track
 
 
 class CreateContainer:
     def __init__(self):
         self._name: str | None = None
-        self._tracks: list[Playable] = []
+        self._tracks: list[Track] = []
         self._closed: bool = True
 
     @property
@@ -16,11 +21,11 @@ class CreateContainer:
         self._name = value
 
     @property
-    def tracks(self) -> list[Playable]:
+    def tracks(self) -> list[Track]:
         return self._tracks
 
     @tracks.setter
-    def tracks(self, value: Playable) -> None:
+    def tracks(self, value: Track) -> None:
         self._tracks.append(value)
 
     @property

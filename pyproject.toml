@@ -4,18 +4,18 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "chisato-discord"
-version = "2.3.2"
+version = "2.3.3"
 authors = ["Kristaa", "Akulenok"]
-homepage = "https://github.com/Chisato-Devs/chisato"
+homepage = "https://github.com/Chisato-Devs/chisato-bot"
 description = ""
-package-mode = false
 
 [tool.poetry.dependencies]
-pip = "24.2"
+pip = "^24.2"
 python = "^3.11"
-aiohttp = "3.9.4"
+aiohttp = "^3.9.4"
+harmonize-py = { git = "https://github.com/Krispeckt/Harmonize.git", branch = "fixes/events" }
 disnake = { git = "https://github.com/DisnakeDev/disnake.git" }
-loguru = "^0.7.2"
+loguru = "^0.6.0"
 aiofiles = "23.2.1"
 asyncpg = "^0.29.0"
 boticordpy = "3.0.4"
@@ -24,4 +24,3 @@ typing_extensions = "4.9.0"
 python-dotenv = "1.0.1"
 asyncio = "^3.4.3"
 numpy = "^1.24.2"
-lavamystic = { git = "https://github.com/Krispeckt/LavaMystic.git" }

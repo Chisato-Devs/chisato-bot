@@ -11,7 +11,7 @@ from disnake import (
     VoiceChannel,
     StageChannel
 )
-from lavamystic import Player
+from harmonize import Player
 
 from utils.basic import (
     EmbedUI,
@@ -38,7 +38,7 @@ class Select(View):
     def __init__(self, interaction: MessageInteraction) -> None:
         self._interaction = interaction
 
-        self._current = cast(Player, interaction.guild.voice_client).current
+        self._current = cast(Player, interaction.guild.voice_client).queue.current
 
         self._end = False
         self._bot: ChisatoBot = interaction.bot  # type: ignore
@@ -115,7 +115,7 @@ class Select(View):
                     )
                 )
             ).set_thumbnail(
-                self._current.artwork
+                self._current.artwork_url
             ),
             view=None
         )

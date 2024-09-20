@@ -8,11 +8,8 @@ from disnake import (
     MessageInteraction,
     Message, Interaction, Locale
 )
-from lavamystic import (
-    Playable,
-    TrackSource,
-    LavalinkLoadException
-)
+from harmonize.connection import Pool
+from harmonize.objects import Track
 from loguru import logger
 
 from utils.basic import View
@@ -21,11 +18,12 @@ from utils.handlers.entertainment.music.decorators import (
     has_nodes_button,
     with_bot_button
 )
-from utils.handlers.entertainment.music.enums import FromSourceEmoji
+from utils.handlers.entertainment.music.enums import FromSourceEmoji, TrackSource
 from utils.i18n import ChisatoLocalStore
 
 if TYPE_CHECKING:
     from utils.basic import ChisatoBot
+    from harmonize.objects import LoadResult
 
 _t = ChisatoLocalStore.load("./cogs/entertainment/music.py")
 
@@ -40,7 +38,7 @@ class SelectTrackView(View):
             interaction: Interaction | Message,
             bot: ChisatoBot,
             query: str,
-            after_select: Callable[[MessageInteraction, Playable], any],
+            after_select: Callable[[MessageInteraction, Track], any],
             decorate: bool = True
     ) -> None:
         self._interaction = interaction
@@ -61,7 +59,7 @@ class SelectTrackView(View):
             "applemusic": TrackSource.AppleMusic,
             "deezer": TrackSource.Deezer
         }
-        self._from_track: dict[str, Playable] = {}
+        self._from_track: dict[str, Track] = {}
 
         super().__init__(store=_t, author=interaction.author, timeout=120, guild=self._interaction.guild)
         self.set_back()
@@ -92,11 +90,12 @@ class SelectTrackView(View):
             query: str,
             *,
             source: TrackSource
-    ) -> tuple[dict[str, Playable], list[SelectOption]]:
-        try:
-            tracks = (await Playable.search(query, source=source))[:25]
-        except LavalinkLoadException:
-            tracks = []
+    ) -> tuple[dict[str, Track], list[SelectOption]]:
+        node = Pool.get_best_node()
+        result: LoadResult = (await node.get_tracks(f"{source.value}{query}"))
+
+        if result.error:
+            logger.warning(f"While loading track ({result.error.severity}): {result.error.message}")
 
         artists_description = _t.get(
             "music.track.select.artists", locale=locale
@@ -104,7 +103,7 @@ class SelectTrackView(View):
 
         from_track = {}
         options = []
-        for i, track in enumerate(tracks):
+        for i, track in enumerate(result.tracks[:25]):
             from_track[str(i)] = track
             options.append(
                 SelectOption(

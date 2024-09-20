@@ -15,7 +15,6 @@ from disnake import (
     Forbidden,
     HTTPException, ModalInteraction, Locale
 )
-from lavamystic import Playable
 
 from utils.basic import (
     View,
@@ -32,6 +31,7 @@ from utils.i18n import ChisatoLocalStore
 
 if TYPE_CHECKING:
     from utils.handlers.entertainment.music.views.playlists.page import ViewPage
+    from harmonize.objects import Track
 
 Channel: TypeAlias = TextChannel | Thread | VoiceChannel | StageChannel
 _t = ChisatoLocalStore.load("./cogs/entertainment/music.py")
@@ -92,7 +92,7 @@ class TrackEditor(View):
 
         @classmethod
         def _generate_backend(
-                cls, tracks: list[Playable], locale: Locale
+                cls, tracks: list[Track], locale: Locale
         ) -> tuple[list[Embed], dict[int, list[SelectOption]]]:
             options: list[SelectOption] = []
             embeds: list[EmbedUI] = []
@@ -125,7 +125,7 @@ class TrackEditor(View):
                             label=f"{i}. " + track.title[:32],
                             description=option_description + track.author[:64],
                             value=str(i),
-                            emoji=getattr(FromSourceEmoji, track.source).value
+                            emoji=getattr(FromSourceEmoji, track.source_name).value
                         )
                     )
                     strokes.append(
@@ -239,7 +239,7 @@ class TrackEditor(View):
                 )
             )
 
-    async def _prompt_track_callback(self, interaction: MessageInteraction, track: Playable) -> None:
+    async def _prompt_track_callback(self, interaction: MessageInteraction, track: Track) -> None:
         try:
             new_playlist = await self._bot.databases.music.edit_playlist_tracks(
                 uid=self.view_page.playlist.id, track=track, add=True

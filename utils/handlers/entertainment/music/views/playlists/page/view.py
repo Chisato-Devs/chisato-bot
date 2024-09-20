@@ -15,9 +15,7 @@ from disnake import (
     Embed,
     NotFound
 )
-from lavamystic import (
-    Player
-)
+from harmonize import Player
 
 import utils.basic as _base
 from utils.basic import (
@@ -104,21 +102,13 @@ class ViewPage(View):
                         (self._playlist.name[:128] + '.' * 3) if len(
                             self._playlist.name) > 128 else self._playlist.name,
                     )
-                ),
-                # description=_t.get(
-                #     "music.playlist.info",
-                #     locale=self._interaction.guild_locale,
-                #     values=(
-                #         await Utils.get_author(self._playlist),
-                #         str(self._playlist.closed),
-                #         str(self._playlist.listened)
-                #     )
-                # )
+                )
             ).set_image(file=file)
         ]
 
         if self.playlist.tracks:
-            strokes: list[str] = QueueGenerator.generate(self._playlist.tracks[:11])
+            _, tracks = QueueGenerator.slice_queue(10, queue=self._playlist.tracks.copy())
+            strokes: list[str] = QueueGenerator.generate(tracks)
             embeds.append(
                 EmbedUI(
                     title=_t.get(
@@ -126,7 +116,9 @@ class ViewPage(View):
                         locale=self._interaction.guild_locale
                     ),
                     description="\n".join(strokes[:10]) + ("\n`. . .`" if len(self._playlist.tracks) > 10 else "")
-                ).set_image(SEPARATOR_URI).set_footer(
+                ).set_image(
+                    SEPARATOR_URI
+                ).set_footer(
                     icon_url="https://i.ibb.co/T8b3f0h/Hour-Glass.png",
                     text=_t.get(
                         "music.playlist.queue_length.footer",
@@ -421,18 +413,18 @@ class ViewPage(View):
                             len(self._playlist.tracks[:150 - len(player.queue)])
                         )
                     )
-                ).set_thumbnail(self._playlist.tracks[0].artwork),
+                ).set_thumbnail(self._playlist.tracks[0].artwork_url),
                 view=None,
                 attachments=[]
             )
         except NotFound:
             return
 
-        await player.queue.put_wait(self._playlist.tracks[:150 - len(player.queue)])
+        player.queue.add(tracks=self._playlist.tracks[:150 - len(player.queue)])
 
-        if not player.playing:
-            await player.play(player.queue.get())
+        if not player.is_playing:
+            await player.play()
         else:
-            player.dispatch_message_update()
+            interaction.bot.dispatch("on_harmonize_message_update", player)
 
         await self._bot.databases.music.add_listened_to_playlist(self._playlist.id)
